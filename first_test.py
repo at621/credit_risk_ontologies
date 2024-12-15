@@ -1,61 +1,132 @@
 from rdflib import Graph, Namespace, RDF, Literal, SKOS
+import os
 
-# Define namespaces
-crm = Namespace("http://example.org/crm#")
-reg = Namespace("http://example.org/regulations#")
+# Define Namespaces
+CRM = Namespace("http://example.org/crm#")
+REG = Namespace("http://example.org/regulations#")
+# You can add more namespaces if needed
 
-# Initialize the graph
+# Initialize the RDF Graph
 g = Graph()
-g.bind("crm", crm)
-g.bind("reg", reg)
+g.bind("crm", CRM)
+g.bind("reg", REG)
 g.bind("skos", SKOS)
 
-# Create a concept scheme for credit risk modeling
-g.add((crm.CreditRiskModeling, RDF.type, SKOS.ConceptScheme))
-g.add((crm.CreditRiskModeling, SKOS.prefLabel, Literal("Credit Risk Modeling")))
-g.add((crm.CreditRiskModeling, SKOS.definition, Literal("A domain dealing with the estimation, analysis, and quantification of the risk of loss due to a borrower’s default.")))
+# ----------------------------
+# 1. Define the Concept Scheme
+# ----------------------------
+g.add((CRM.CreditRiskModeling, RDF.type, SKOS.ConceptScheme))
+g.add((CRM.CreditRiskModeling, SKOS.prefLabel, Literal("Credit Risk Modeling")))
+g.add((CRM.CreditRiskModeling, SKOS.definition, Literal(
+    "A domain dealing with the estimation, analysis, and quantification of the risk of loss due to a borrower’s default."
+)))
 
-# Create a top concept
-g.add((crm.CreditRiskModel, RDF.type, SKOS.Concept))
-g.add((crm.CreditRiskModel, SKOS.prefLabel, Literal("Credit Risk Model")))
-g.add((crm.CreditRiskModel, SKOS.definition, Literal("A conceptual or mathematical framework to estimate the probability and severity of loss from a counterparty default.")))
-g.add((crm.CreditRiskModel, SKOS.topConceptOf, crm.CreditRiskModeling))
-g.add((crm.CreditRiskModel, SKOS.inScheme, crm.CreditRiskModeling))
+# ----------------------------
+# 2. Define Top-Level Concepts
+# ----------------------------
+# Top Concept: Credit Risk Model
+g.add((CRM.CreditRiskModel, RDF.type, SKOS.Concept))
+g.add((CRM.CreditRiskModel, SKOS.prefLabel, Literal("Credit Risk Model")))
+g.add((CRM.CreditRiskModel, SKOS.definition, Literal(
+    "A conceptual or mathematical framework to estimate the probability and severity of loss from a counterparty default."
+)))
+g.add((CRM.CreditRiskModel, SKOS.topConceptOf, CRM.CreditRiskModeling))
+g.add((CRM.CreditRiskModel, SKOS.inScheme, CRM.CreditRiskModeling))
 
-# Define some narrower concepts under CreditRiskModel
-g.add((crm.ProbabilityOfDefault, RDF.type, SKOS.Concept))
-g.add((crm.ProbabilityOfDefault, SKOS.prefLabel, Literal("Probability of Default")))
-g.add((crm.ProbabilityOfDefault, SKOS.definition, Literal("The likelihood that a borrower will fail to meet its debt obligations within a given time horizon.")))
-g.add((crm.ProbabilityOfDefault, SKOS.broader, crm.CreditRiskModel))
-g.add((crm.ProbabilityOfDefault, SKOS.inScheme, crm.CreditRiskModeling))
+# ----------------------------
+# 3. Define Narrower Concepts
+# ----------------------------
+# Probability of Default (PD)
+g.add((CRM.ProbabilityOfDefault, RDF.type, SKOS.Concept))
+g.add((CRM.ProbabilityOfDefault, SKOS.prefLabel, Literal("Probability of Default")))
+g.add((CRM.ProbabilityOfDefault, SKOS.definition, Literal(
+    "The likelihood that a borrower will fail to meet its debt obligations within a given time horizon."
+)))
+g.add((CRM.ProbabilityOfDefault, SKOS.broader, CRM.CreditRiskModel))
+g.add((CRM.ProbabilityOfDefault, SKOS.inScheme, CRM.CreditRiskModeling))
 
-g.add((crm.LossGivenDefault, RDF.type, SKOS.Concept))
-g.add((crm.LossGivenDefault, SKOS.prefLabel, Literal("Loss Given Default")))
-g.add((crm.LossGivenDefault, SKOS.definition, Literal("The fraction of an exposure that is lost if a default occurs.")))
-g.add((crm.LossGivenDefault, SKOS.broader, crm.CreditRiskModel))
-g.add((crm.LossGivenDefault, SKOS.inScheme, crm.CreditRiskModeling))
+# Loss Given Default (LGD)
+g.add((CRM.LossGivenDefault, RDF.type, SKOS.Concept))
+g.add((CRM.LossGivenDefault, SKOS.prefLabel, Literal("Loss Given Default")))
+g.add((CRM.LossGivenDefault, SKOS.definition, Literal(
+    "The fraction of an exposure that is lost if a default occurs."
+)))
+g.add((CRM.LossGivenDefault, SKOS.broader, CRM.CreditRiskModel))
+g.add((CRM.LossGivenDefault, SKOS.inScheme, CRM.CreditRiskModeling))
 
-# Create narrower concepts for LGD
-g.add((crm.LossGivenDefaultForPerforming, RDF.type, SKOS.Concept))
-g.add((crm.LossGivenDefaultForPerforming, SKOS.prefLabel, Literal("Loss Given Default for Performing Exposures")))
-g.add((crm.LossGivenDefaultForPerforming, SKOS.definition, Literal("LGD applied specifically to exposures currently meeting obligations on time.")))
-g.add((crm.LossGivenDefaultForPerforming, SKOS.broader, crm.LossGivenDefault))
-g.add((crm.LossGivenDefaultForPerforming, SKOS.inScheme, crm.CreditRiskModeling))
+# Exposure at Default (EAD)
+g.add((CRM.ExposureAtDefault, RDF.type, SKOS.Concept))
+g.add((CRM.ExposureAtDefault, SKOS.prefLabel, Literal("Exposure at Default")))
+g.add((CRM.ExposureAtDefault, SKOS.definition, Literal(
+    "The amount of exposure owed by a borrower at the moment of default."
+)))
+g.add((CRM.ExposureAtDefault, SKOS.broader, CRM.CreditRiskModel))
+g.add((CRM.ExposureAtDefault, SKOS.inScheme, CRM.CreditRiskModeling))
 
-g.add((crm.LossGivenDefaultForNonPerforming, RDF.type, SKOS.Concept))
-g.add((crm.LossGivenDefaultForNonPerforming, SKOS.prefLabel, Literal("Loss Given Default for Non-Performing Exposures")))
-g.add((crm.LossGivenDefaultForNonPerforming, SKOS.definition, Literal("LGD applied specifically to exposures that are delinquent or in default.")))
-g.add((crm.LossGivenDefaultForNonPerforming, SKOS.broader, crm.LossGivenDefault))
-g.add((crm.LossGivenDefaultForNonPerforming, SKOS.inScheme, crm.CreditRiskModeling))
+# Risk Weight
+g.add((CRM.RiskWeight, RDF.type, SKOS.Concept))
+g.add((CRM.RiskWeight, SKOS.prefLabel, Literal("Risk Weight")))
+g.add((CRM.RiskWeight, SKOS.definition, Literal(
+    "A regulatory measure expressing the relative riskiness of a credit exposure, used to calculate capital requirements."
+)))
+g.add((CRM.RiskWeight, SKOS.broader, CRM.CreditRiskModel))
+g.add((CRM.RiskWeight, SKOS.inScheme, CRM.CreditRiskModeling))
 
-# Add associative relationship between performing and non-performing variants
-g.add((crm.LossGivenDefaultForPerforming, SKOS.related, crm.LossGivenDefaultForNonPerforming))
+# ----------------------------
+# 4. Define Subcategories for LGD
+# ----------------------------
+# LGD for Performing Exposures
+g.add((CRM.LossGivenDefaultForPerforming, RDF.type, SKOS.Concept))
+g.add((CRM.LossGivenDefaultForPerforming, SKOS.prefLabel, Literal("Loss Given Default for Performing Exposures")))
+g.add((CRM.LossGivenDefaultForPerforming, SKOS.definition, Literal(
+    "LGD applied specifically to exposures currently meeting obligations on time."
+)))
+g.add((CRM.LossGivenDefaultForPerforming, SKOS.broader, CRM.LossGivenDefault))
+g.add((CRM.LossGivenDefaultForPerforming, SKOS.inScheme, CRM.CreditRiskModeling))
 
-# Add a large number of requirements as URIs only, linked to ProbabilityOfDefault
+# LGD for Non-Performing Exposures
+g.add((CRM.LossGivenDefaultForNonPerforming, RDF.type, SKOS.Concept))
+g.add((CRM.LossGivenDefaultForNonPerforming, SKOS.prefLabel, Literal("Loss Given Default for Non-Performing Exposures")))
+g.add((CRM.LossGivenDefaultForNonPerforming, SKOS.definition, Literal(
+    "LGD applied specifically to exposures that are delinquent or in default."
+)))
+g.add((CRM.LossGivenDefaultForNonPerforming, SKOS.broader, CRM.LossGivenDefault))
+g.add((CRM.LossGivenDefaultForNonPerforming, SKOS.inScheme, CRM.CreditRiskModeling))
+
+# Associative Relationship between LGD Subcategories
+g.add((CRM.LossGivenDefaultForPerforming, SKOS.related, CRM.LossGivenDefaultForNonPerforming))
+
+# ----------------------------
+# 5. Associate Regulatory Requirements
+# ----------------------------
+# Custom Property: hasRequirement
+# Define it as a property if not already defined
+g.add((CRM.hasRequirement, RDF.type, RDF.Property))
+g.add((CRM.hasRequirement, SKOS.prefLabel, Literal("has requirement")))
+g.add((CRM.hasRequirement, SKOS.definition, Literal(
+    "Associates a regulatory requirement with a credit risk modeling concept."
+)))
+
+# Example: Link all requirements to Probability of Default (PD)
+# You can change the association logic as per your needs
 for i in range(1, 10001):
-    req_uri = reg[f"Req{i}"]
-    # Just link the requirement ID to ProbabilityOfDefault
-    g.add((crm.ProbabilityOfDefault, crm.hasRequirement, req_uri))
+    req_uri = REG[f"Req{i}"]
+    g.add((CRM.ProbabilityOfDefault, CRM.hasRequirement, req_uri))
 
-# Print the resulting graph in Turtle format
-print(g.serialize(format="turtle").decode("utf-8"))
+# ----------------------------
+# 6. Save the RDF Graph to a File
+# ----------------------------
+# Define the output directory and file name
+output_dir = "output_rdf"
+output_file = "credit_risk_modeling.ttl"
+
+# Create the output directory if it doesn't exist
+os.makedirs(output_dir, exist_ok=True)
+
+# Full path to the output file
+file_path = os.path.join(output_dir, output_file)
+
+# Serialize the graph to Turtle format and save to the file
+g.serialize(destination=file_path, format="turtle")
+
+print(f"RDF graph has been successfully saved to {file_path}")
